@@ -6,7 +6,7 @@ import requests
 import regex as re
 from os import listdir
 from os.path import isfile, join
-import webvtt
+# import webvtt
 import os
 from flask_cors import CORS
 
@@ -29,7 +29,7 @@ def demo():
 # http://127.0.0.1:5000/video/video_id
 @app.get("/video/<string:video_id>")
 def get_video_id(video_id):
-    print('video_id is: ', video_id)
+    print('video_id is: ', video_id, os.getcwd())
     filepath = "./static/" + video_id + "/" + video_id + ".mp4"
     print("filepath is: ", filepath)
     isExisting = os.path.exists(filepath)
@@ -63,7 +63,7 @@ def get_caption_zh(video_id):
 # http://127.0.0.1:5000/caption/bi/video_id
 @app.get("/caption/bi/<string:video_id>")
 def get_caption_bi(video_id):
-    filepath = "./static/" + video_id + "/" + video_id + ".bi.vtt"
+    filepath = "./static/" + video_id + "/" + video_id + ".en.vtt"
     print("filepath is: ", filepath)
     isExisting = os.path.exists(filepath)
     if not isExisting:
@@ -95,22 +95,21 @@ def _download_video_with_subtitles(video_id, language=['en', "zh-Hans", 'de']):
 #     return send_file(video_path, mimetype="video/mp4")
 
 
-# http://127.0.0.1:5000/caption/VAQMsprq-Ps/en
-@app.post("/caption/<string:id>/<string:language>")
-def post_caption(id, language):
-    folder_path = "./static/" + id
-    onlyfiles = [f for f in listdir(folder_path) if isfile(join(folder_path, f))]
-    data = ''
-    for ele in onlyfiles:
-        if ele.endswith("[" + id + "]." + language + ".vtt"):
-            data = ele
-            for caption in webvtt.read("./static/" + id + "/" + data):
-                print(caption.start)
-                print(caption.end)
-                print(caption.text)
-            return make_response(data, 200)
-    # ToDo
-    return make_response(data, 200)
+# # http://127.0.0.1:5000/caption/VAQMsprq-Ps/en
+# @app.post("/caption/bi/<string:id>")
+# def post_caption(id):
+#     folder_path = "./static/" + id
+#     onlyfiles = [f for f in listdir(folder_path) if isfile(join(folder_path, f))]
+#     data = ''
+#     for ele in onlyfiles:
+#         if ele.endswith("[" + id + "]." + 'bi' + ".vtt"):
+#             data = ele
+#             for caption in webvtt.read("./static/" + id + "/" + data):
+#                 print(caption.start)
+#                 print(caption.end)
+#                 print(caption.text)
+#             return make_response(data, 200)
+#     return make_response(data, 200)
 
 
 @app.post("/anki")
