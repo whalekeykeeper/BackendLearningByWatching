@@ -1,5 +1,4 @@
-
+*.mp4
 .idea/
 .DS_Store
-static/
 __pycache__/app.cpython-311.pyc
