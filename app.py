@@ -52,7 +52,7 @@ def get_caption_en(video_id):
 # http://127.0.0.1:5000/caption/zh/video_id
 @app.get("/caption/zh/<string:video_id>")
 def get_caption_zh(video_id):
-    filepath = "./static/" + video_id + "/" + video_id + ".zh-Hans.vtt"
+    filepath = "./static/" + video_id + "/" + video_id + ".zh-CN.vtt"
     print("filepath is: ", filepath)
     isExisting = os.path.exists(filepath)
     if not isExisting:
@@ -63,7 +63,7 @@ def get_caption_zh(video_id):
 # http://127.0.0.1:5000/caption/bi/video_id
 @app.get("/caption/bi/<string:video_id>")
 def get_caption_bi(video_id):
-    filepath = "./static/" + video_id + "/" + video_id + ".zh-Hans.vtt"
+    filepath = "./static/" + video_id + "/" + video_id + ".bi.vtt"
     print("filepath is: ", filepath)
     isExisting = os.path.exists(filepath)
     if not isExisting:

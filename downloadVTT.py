@@ -73,3 +73,5 @@ def __format_time(time):
 if __name__ == '__main__':
     id = "aUBawr1hUwo"
     download_with_youtube_transcript_api(id)
+
+

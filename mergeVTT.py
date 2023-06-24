@@ -1,4 +1,5 @@
 import argparse
+import re
 import sys
 from datetime import timedelta
 from pathlib import Path
@@ -18,6 +19,23 @@ def convert_vtt_to_srt(vtt_path):
     convert_file.convert_vtt_to_str(srt_path)
 
 
+def convert_srt_to_vtt(srt_path):
+    srt_input = open(srt_path, "r", encoding='utf8')
+    vtt_output = open(Path(srt_path[:-4] + '.vtt'), "w", encoding='utf8')
+
+    lines = srt_input.read().splitlines()
+
+    vtt_output.write('WEBVTT\n\n')
+
+    i = 1
+    while i < len(lines):
+        if not lines[i].isdigit():
+            convline = re.sub(',(?! )', '.', lines[i])
+            vtt_output.write(convline + '\n')
+        i += 1
+    vtt_output.close()
+
+
 def nearest(items, pivot):
     return min(items, key=lambda x: abs(x.start - pivot))
 
@@ -35,13 +53,16 @@ def merge(path1, path2, id):
     for idx, sub in subs2.items():
         start: timedelta = sub.start
         sub_nearest_slot: srt.Subtitle = nearest(subs1.values(), start)
-        sub_nearest_slot.content = f'{sub_nearest_slot.content}<br>{sub.content}'
+        sub_nearest_slot.content = f'{sub_nearest_slot.content}\n{sub.content}'
         subs1[sub_nearest_slot.index] = sub_nearest_slot
 
-    generated_srt = Path("static/" + id + "/" + id + ".bi.vtt")
+    merged_path = "static/" + id + "/" + id + ".bi.srt"
+    merged_srt = Path(merged_path)
 
-    with generated_srt.open(mode='w', encoding='utf-8') as fout:
+    with merged_srt.open(mode='w', encoding='utf-8') as fout:
         fout.write(srt.compose(list(subs1.values())))
+
+    return merged_path
 
 
 if __name__ == '__main__':
@@ -53,4 +74,6 @@ if __name__ == '__main__':
 
     path1 = Path(path_zh[:-4] + ".srt")
     path2 = Path(path_en[:-4] + ".srt")
-    merge(path1, path2, id)
+    merged_srt_path = merge(path1, path2, id)
+
+    convert_srt_to_vtt(merged_srt_path)
