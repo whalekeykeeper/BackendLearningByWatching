@@ -63,7 +63,7 @@ def get_caption_zh(video_id):
 # http://127.0.0.1:5000/caption/bi/video_id
 @app.get("/caption/bi/<string:video_id>")
 def get_caption_bi(video_id):
-    filepath = "./static/" + video_id + "/" + video_id + ".en.vtt"
+    filepath = "./static/" + video_id + "/" + video_id + ".zh-Hans.vtt"
     print("filepath is: ", filepath)
     isExisting = os.path.exists(filepath)
     if not isExisting:
@@ -71,12 +71,12 @@ def get_caption_bi(video_id):
     return send_file(filepath, mimetype="text/vtt")
 
 
-def _download_video_with_subtitles(video_id, language=['en', "zh-Hans", 'de']):
+def _download_video_with_subtitles(video_id, language=["zh-Hans"]):
     if video_id:
         ydl_opts = {
             'subtitleslangs': language,
             'writesubtitles': True,
-            'writeautomaticsub': True,
+            # 'writeautomaticsub': True,
             'subtitlesformat': 'vtt',
             "paths": {'home': "./static/" + video_id},
             'outtmpl': f'{video_id}.%(ext)s'
