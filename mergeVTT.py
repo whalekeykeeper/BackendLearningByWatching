@@ -1,4 +1,5 @@
 import argparse
+import os
 import re
 import sys
 from datetime import timedelta
@@ -53,7 +54,7 @@ def merge(path1, path2, id):
     for idx, sub in subs2.items():
         start: timedelta = sub.start
         sub_nearest_slot: srt.Subtitle = nearest(subs1.values(), start)
-        sub_nearest_slot.content = f'{sub_nearest_slot.content}\n{sub.content}'
+        sub_nearest_slot.content = f'{sub_nearest_slot.content}\n<br>{sub.content}'
         subs1[sub_nearest_slot.index] = sub_nearest_slot
 
     merged_path = "static/" + id + "/" + id + ".bi.srt"
@@ -66,14 +67,35 @@ def merge(path1, path2, id):
 
 
 if __name__ == '__main__':
-    id = 'aUBawr1hUwo'
-    path_zh = "static/" + id + "/" + id + ".zh-CN.vtt"
-    path_en = "static/" + id + "/" + id + ".en.vtt"
-    convert_vtt_to_srt(path_zh)
-    convert_vtt_to_srt(path_en)
+    # id = 'aUBawr1hUwo'
+    # path_zh = "static/" + id + "/" + id + ".zh-CN.vtt"
+    # path_en = "static/" + id + "/" + id + ".en.vtt"
+    # convert_vtt_to_srt(path_zh)
+    # convert_vtt_to_srt(path_en)
+    #
+    # path1 = Path(path_zh[:-4] + ".srt")
+    # path2 = Path(path_en[:-4] + ".srt")
+    # merged_srt_path = merge(path1, path2, id)
+    #
+    # convert_srt_to_vtt(merged_srt_path)
 
-    path1 = Path(path_zh[:-4] + ".srt")
-    path2 = Path(path_en[:-4] + ".srt")
-    merged_srt_path = merge(path1, path2, id)
 
-    convert_srt_to_vtt(merged_srt_path)
+    pwd = os.getcwd()
+    print(pwd)
+    vtt = "static/aUBawr1hUwo/aUBawr1hUwo.bi.vtt"
+    count_br = 0
+    count_arrow = 0
+    with open(vtt) as f:
+        lines = f.readlines()
+        for index, element in enumerate(lines):
+            # print(index, element)
+            if "<br>" in element:
+                count_br += 1
+            if "-->" in element:
+                count_arrow += 1
+            if count_arrow == count_br:
+                print(index, element)
+            print(count_br, count_arrow)
+            print(count_br==count_arrow)
+
+
