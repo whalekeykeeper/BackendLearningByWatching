@@ -1,25 +1,26 @@
 from __future__ import unicode_literals
-import youtube_dl
+from yt_dlp import YoutubeDL
 from youtube_transcript_api import YouTubeTranscriptApi
 import os
 
 
-def download_cap_with_youtube_dl(url):
+def download_video_and_subtitles(id):
+    download_youtube_video(id)
+    download_subtitles(id)
+
+
+def download_youtube_video(id):
+    url = "https://youtu.be/" + id
+    path_base = "./static/" + id + "/"
     ydl_opts = {
-        'format': '(bestvideo[width>=1080][ext=mp4]/bestvideo)+bestaudio/best',  # Ensures best settings
-        'writesubtitles': True,  # Adds a subtitles file if it exists
-        'allsubtitles': True,  # Adds auto-generated subtitles file
-        'subtitle': '--write-sub --sub-lang zh-Hans',  # writes subtitles file in english
-        'subtitlesformat': 'srt',  # writes the subtitles file in "srt" or "ass/srt/best"
-        'skip_download': True,  # skips downloading the video file
+        'outtmpl': os.path.join(path_base + id + ".mp4"),
+        'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best'
     }
-
-    with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+    with YoutubeDL(ydl_opts) as ydl:
         ydl.download([url])
-    print("Download Successful!")
 
 
-def download_with_youtube_transcript_api(video_id):
+def download_subtitles(video_id):
     transcript_list = YouTubeTranscriptApi.list_transcripts(video_id)
     transcripts = {}
     for element in transcript_list:
@@ -71,7 +72,5 @@ def __format_time(time):
 
 
 if __name__ == '__main__':
-    id = "aUBawr1hUwo"
-    download_with_youtube_transcript_api(id)
-
-
+    video_id = "aUBawr1hUwo"
+    download_video_and_subtitles(video_id)
