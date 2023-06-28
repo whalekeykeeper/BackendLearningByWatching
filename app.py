@@ -9,83 +9,79 @@ from os.path import isfile, join
 # import webvtt
 import os
 from flask_cors import CORS
+from download import download_video_and_subtitles
+from mergeVTT import cleanup
 
 app = Flask(__name__)
 CORS(app)
 
-@app.route('/')
-def hello_world():  # put application's code here
-    return 'Hello World!'
-
-
-# localhost:5000/demo
-@app.post("/demo")
-def demo():
-    data = request.get_json()
-    print(data)
-    return make_response(data, 200)
+#
+# @app.route('/')
+# def hello_world():  # put application's code here
+#     return 'Hello World!'
+#
+#
+# # localhost:5000/demo
+# @app.post("/demo")
+# def demo():
+#     data = request.get_json()
+#     print(data)
+#     return make_response(data, 200)
 
 
 # http://127.0.0.1:5000/video/video_id
 @app.get("/video/<string:video_id>")
 def get_video_id(video_id):
     print('video_id is: ', video_id, os.getcwd())
-    filepath = "./static/" + video_id + "/" + video_id + ".mp4"
-    print("filepath is: ", filepath)
-    isExisting = os.path.exists(filepath)
-    if not isExisting:
-        _download_video_with_subtitles(video_id)
-    return send_file(filepath, mimetype="video")
+
+    video_path = "./static/" + video_id + "/" + video_id + ".mp4"
+    print("video_path is: ", video_path)
+    print("The video file exists.")
+    video_existing = os.path.exists(video_path)
+    if not video_existing:
+        download_video_and_subtitles(video_id)
+    else:
+        print("The video file exists.")
+
+    vtt_path = "./static/" + video_id + "/" + video_id + ".bi.vtt"
+    print("vtt_path is: ", vtt_path)
+    vtt_existing = os.path.exists(vtt_path)
+    print("------\nvtt_existing: ", vtt_existing)
+    if not vtt_existing:
+        cleanup(video_id)
+    else:
+        print("The bi-vtt file exists.")
+
+    return send_file(video_path, mimetype="video")
 
 
-# http://127.0.0.1:5000/caption/en/video_id
-@app.get("/caption/en/<string:video_id>")
-def get_caption_en(video_id):
-    filepath = "./static/" + video_id + "/" + video_id + ".en.vtt"
-    print("filepath is: ", filepath)
-    isExisting = os.path.exists(filepath)
-    if not isExisting:
-        _download_video_with_subtitles(video_id)
-    return send_file(filepath, mimetype="text/vtt")
+# # http://127.0.0.1:5000/caption/en/video_id
+# @app.get("/caption/en/<string:video_id>")
+# def get_caption_en(video_id):
+#     filepath = "./static/" + video_id + "/" + video_id + ".en.vtt"
+#     print("filepath is: ", filepath)
+#     isExisting = os.path.exists(filepath)
+#     if not isExisting:
+#         _download_video_with_subtitles(video_id)
+#     return send_file(filepath, mimetype="text/vtt")
 
 
-# http://127.0.0.1:5000/caption/zh/video_id
-@app.get("/caption/zh/<string:video_id>")
-def get_caption_zh(video_id):
-    filepath = "./static/" + video_id + "/" + video_id + ".zh-CN.vtt"
-    print("filepath is: ", filepath)
-    isExisting = os.path.exists(filepath)
-    if not isExisting:
-        _download_video_with_subtitles(video_id)
-    return send_file(filepath, mimetype="text/vtt")
+# # http://127.0.0.1:5000/caption/zh/video_id
+# @app.get("/caption/zh/<string:video_id>")
+# def get_caption_zh(video_id):
+#     filepath = "./static/" + video_id + "/" + video_id + ".zh-CN.vtt"
+#     print("filepath is: ", filepath)
+#     isExisting = os.path.exists(filepath)
+#     if not isExisting:
+#         _download_video_with_subtitles(video_id)
+#     return send_file(filepath, mimetype="text/vtt")
 
 
 # http://127.0.0.1:5000/caption/bi/video_id
 @app.get("/caption/bi/<string:video_id>")
 def get_caption_bi(video_id):
-    filepath = "./static/" + video_id + "/" + video_id + ".bi.vtt"
-    print("filepath is: ", filepath)
-    isExisting = os.path.exists(filepath)
-    if not isExisting:
-        _download_video_with_subtitles(video_id)
-    return send_file(filepath, mimetype="text/vtt")
-
-
-def _download_video_with_subtitles(video_id, language=["zh-Hans"]):
-    if video_id:
-        ydl_opts = {
-            'subtitleslangs': language,
-            'writesubtitles': True,
-            # 'writeautomaticsub': True,
-            'subtitlesformat': 'vtt',
-            "paths": {'home': "./static/" + video_id},
-            'outtmpl': f'{video_id}.%(ext)s'
-        }
-        url = "https://youtu.be/" + video_id
-        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            ydl.download([url])
-    else:
-        print('Invalid YouTube id.')
+    vtt_path = "./static/" + video_id + "/" + video_id + ".bi.vtt"
+    return send_file(vtt_path, mimetype="text/vtt")
 
 
 # @app.route("/video/<string:video_id>", methods=["GET"])
@@ -114,27 +110,8 @@ def _download_video_with_subtitles(video_id, language=["zh-Hans"]):
 
 @app.post("/anki")
 def create_anki_deck():
-    data = request.get_json()  # [{"word": word, "translation": translation, "sentence": sentence}, ...]
-
-    # ydl = yt_dlp.YoutubeDL({'writesubtitles': True, 'allsubtitles': True, 'writeautomaticsub': True})
-    # res = ydl.extract_info(URL, download=False)
-    # if res['requested_subtitles'] and res['requested_subtitles']['en']:
-    #     print('Grabbing vtt file from ' + res['requested_subtitles']['en']['url'])
-    #     response = requests.get(res['requested_subtitles']['en']['url'], stream=True)
-    #     f1 = open("testfile01.txt", "w")
-    #     new = response.text
-    #     # new = re.sub(r'\d{2}\W\d{2}\W\d{2}\W\d{3}\s\W{3}\s\d{2}\W\d{2}\W\d{2}\W\d{3}', '', response.text)
-    #     f1.write(new)
-    #     f1.close()
-    #     if len(res['subtitles']) > 0:
-    #         print('manual captions')
-    #     else:
-    #         print('automatic_captions')
-    # else:
-    #     print('Youtube Video does not have any english captions')
+    pass
 
 
 if __name__ == '__main__':
     app.run()
-
-    # _download_video_with_subtitles("https://www.youtube.com/watch?v=VAQMsprq-Ps")

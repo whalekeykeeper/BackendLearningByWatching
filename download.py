@@ -14,7 +14,7 @@ def download_youtube_video(id):
     path_base = "./static/" + id + "/"
     ydl_opts = {
         'outtmpl': os.path.join(path_base + id + ".mp4"),
-        'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best'
+        # 'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best'
     }
     with YoutubeDL(ydl_opts) as ydl:
         ydl.download([url])
