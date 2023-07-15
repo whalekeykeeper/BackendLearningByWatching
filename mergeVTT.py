@@ -23,17 +23,19 @@ def __tokenize_zh(text):
 
     words_list = list(jieba.cut(text, use_paddle=True))
     words = ""
+    # for i, e in enumerate(words_list):
+    #     if e in punc:
+    #         words += e.strip()
+    #     elif len(e.strip()) == 0:
+    #         words += e.strip()
+    #     elif re.search('[a-zA-Z0-9]', e) is not None:
+    #         words += e.strip()
+    #     else:
+    #         words += "🀀" + e.strip() + "🀅"
     for i, e in enumerate(words_list):
-        if e in punc:
-            words += e.strip()
-        elif len(e.strip()) == 0:
-            words += e.strip()
-        elif re.search('[a-zA-Z0-9]', e) is not None:
-            words += e.strip()
-        else:
-            words += "🀀" + e.strip() + "🀅"
+        words += e + " "
 
-    return words
+    return words.strip()
 
 
 def __tokenize_en(text):
@@ -47,32 +49,29 @@ def __tokenize_en(text):
             words += "🀀" + e + "🀅" + " "
         else:  # to remove the whitespace before punctuation
             words = words[:-1] + e + " "
-    return words
+    return words.strip()
 
 
 def merge(path1, path2, id):
     with path1.open(encoding='utf-8') as fi1:
         subs1 = {s.index: s for s in srt.parse(fi1)}
 
-        # To tokenize
         for k, v in subs1.items():
-            # print("-------")
-            # print(k)
+            # To merge two rows into one row
             if "\n" in v.content:
                 v.content = v.content.replace("\n", '')
-
+            # To tokenize
             v.content = __tokenize_zh(v.content)
-            # print(v.content)
 
     with path2.open(encoding='utf-8') as fi2:
         subs2 = {s.index: s for s in srt.parse(fi2)}
-        # To tokenize
-        for k, v in subs2.items():
 
+        # To merge two rows into one row
+        for k, v in subs2.items():
             if "\n" in v.content:
                 v.content = v.content.replace("\n", ' ')
-
-            v.content = __tokenize_en(v.content)
+            #     # To tokenize
+            # v.content = __tokenize_en(v.content)
 
     # iterate all subs in srt2 and find the closest EXISTING slot in srt1
     sub: srt.Subtitle

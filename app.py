@@ -8,12 +8,15 @@ from os import listdir
 from os.path import isfile, join
 # import webvtt
 import os
+import openai
+import os
 from flask_cors import CORS
 from download import download_video_and_subtitles
 from mergeVTT import cleanup
 
 app = Flask(__name__)
 CORS(app)
+
 
 #
 # @app.route('/')
@@ -66,15 +69,42 @@ def get_video_id(video_id):
 #     return send_file(filepath, mimetype="text/vtt")
 
 
-# # http://127.0.0.1:5000/caption/zh/video_id
-# @app.get("/caption/zh/<string:video_id>")
-# def get_caption_zh(video_id):
-#     filepath = "./static/" + video_id + "/" + video_id + ".zh-CN.vtt"
-#     print("filepath is: ", filepath)
-#     isExisting = os.path.exists(filepath)
-#     if not isExisting:
-#         _download_video_with_subtitles(video_id)
-#     return send_file(filepath, mimetype="text/vtt")
+# http://127.0.0.1:5000/search/clicked_word
+@app.get("/search/<string:clicked_word>/<string:clicked_sentence>")
+def get_translation(clicked_word, clicked_sentence, corpus):
+    with open('key.txt') as f:
+        openai.api_key = f.readlines()[0]
+    openai.Model.list()
+    content = "Imagine you are working as a bilingual dictionary between Chinese and English. Please give the most " \
+              "likely translation of the given word " \
+              "without " \
+              "any " \
+              "punctuation. If the " \
+              "given word is in " \
+              "Chinese, " \
+              "please give " \
+              "the English " \
+              "translation. If the given word is in English, please give the Chinese translation. For example, " \
+              "given 'travel': '旅行'; given '快乐': 'happy' or 'happiness'. Word: " + clicked_word + "."
+    completion = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            {"role": "user", "content": content},
+        ]
+    )
+    translation = completion.choices[0].message.to_dict()['content']
+    corpus_path = "static/corpus.json"
+    check_corpus = os.path.isfile(corpus_path)
+    if not check_corpus:
+        empty_json = json.loads('{}')
+        with open(corpus_path, "w") as outfile:
+            outfile.write(empty_json)
+    update_corpus(clicked_word, translation, clicked_sentence, corpus_path, corpus)
+    return translation
+
+
+def update_corpus(clicked_word, translation, clicked_sentence, corpus_path, corpus):
+    pass
 
 
 # http://127.0.0.1:5000/caption/bi/video_id
