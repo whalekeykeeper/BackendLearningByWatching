@@ -71,7 +71,7 @@ def get_video_id(video_id):
 
 # http://127.0.0.1:5000/search/clicked_word
 @app.get("/search/<string:clicked_word>/<string:clicked_sentence>")
-def get_translation(clicked_word, clicked_sentence, corpus):
+def get_translation(clicked_word, clicked_sentence):
     with open('key.txt') as f:
         openai.api_key = f.readlines()[0]
     openai.Model.list()
@@ -93,18 +93,15 @@ def get_translation(clicked_word, clicked_sentence, corpus):
         ]
     )
     translation = completion.choices[0].message.to_dict()['content']
-    corpus_path = "static/corpus.json"
+    corpus_path = "static/corpus.txt"
     check_corpus = os.path.isfile(corpus_path)
-    if not check_corpus:
-        empty_json = json.loads('{}')
+    if check_corpus:
+        with open(corpus_path, 'a') as file:
+            file.write(clicked_word + "\t" + translation + "\t" + clicked_sentence + "\n")
+    else:
         with open(corpus_path, "w") as outfile:
-            outfile.write(empty_json)
-    update_corpus(clicked_word, translation, clicked_sentence, corpus_path, corpus)
+            outfile.write(clicked_word + "\t" + translation + "\t" + clicked_sentence + "\n")
     return translation
-
-
-def update_corpus(clicked_word, translation, clicked_sentence, corpus_path, corpus):
-    pass
 
 
 # http://127.0.0.1:5000/caption/bi/video_id
